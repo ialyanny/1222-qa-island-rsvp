@@ -2,113 +2,443 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>12/22 QA Q4 高雄島語聚餐報名</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --primary: #1e3a8a; --primary-light: #2563eb; --bg: #f3f4f6;
-            --card: #ffffff; --text: #1f2937; --muted: #6b7280;
-            --border: #e5e7eb; --success: #059669; --danger: #dc2626;
+            --primary: #1e3a8a;
+            --primary-light: #2563eb;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --success: #059669;
+            --danger: #dc2626;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding: 20px 15px; line-height: 1.6; }
-        .container { max-width: 760px; margin: 0 auto; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro TC", "PingFang TC", "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 12px 12px calc(24px + env(safe-area-inset-bottom)) 12px;
+            line-height: 1.5;
+            font-size: 16px;
+        }
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        /* 頂部活動橫幅 (手機緊湊化) */
         .hero {
             background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-            color: white; border-radius: 16px; padding: 28px 24px; margin-bottom: 18px;
-            box-shadow: 0 10px 25px rgba(30, 58, 138, 0.2);
+            color: white;
+            border-radius: 20px;
+            padding: 20px 18px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
         }
-        .badge-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .badge-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
         .badge {
-            background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4);
-            padding: 4px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 600;
+            background: rgba(245, 158, 11, 0.22);
+            color: #fcd34d;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 600;
         }
-        .conn-dot { font-size: 0.8rem; color: #a7f3d0; }
-        .hero h1 { font-size: 1.6rem; margin-bottom: 12px; }
+        .conn-dot {
+            font-size: 0.78rem;
+            color: #a7f3d0;
+            font-weight: 500;
+        }
+        .hero h1 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            line-height: 1.3;
+            letter-spacing: 0.3px;
+        }
         .info-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;
-            background: rgba(255, 255, 255, 0.08); padding: 14px 16px; border-radius: 12px; font-size: 0.92rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(6px);
+            padding: 12px 14px;
+            border-radius: 14px;
+            font-size: 0.88rem;
         }
-        .info-item span { color: #93c5fd; font-weight: 500; margin-right: 6px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        @media (min-width: 480px) {
+            .info-grid { grid-template-columns: 1fr 1fr; }
+            .hero h1 { font-size: 1.55rem; }
+        }
+        .info-item {
+            display: flex;
+            align-items: baseline;
+        }
+        .info-item span {
+            color: #93c5fd;
+            font-weight: 600;
+            min-width: 72px;
+            flex-shrink: 0;
+        }
+
+        /* 頂部膠囊切換分頁 (Sticky 置頂方便手機切換) */
+        .tabs {
+            display: flex;
+            gap: 6px;
+            background: #e2e8f0;
+            padding: 5px;
+            border-radius: 14px;
+            margin-bottom: 14px;
+            position: sticky;
+            top: 8px;
+            z-index: 50;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
         .tab-btn {
-            flex: 1; padding: 12px; border: none; border-radius: 12px; background: #e5e7eb;
-            color: var(--muted); font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: 0.2s;
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--muted);
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2); }
-        .card { background: var(--card); border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .tab-btn.active {
+            background: var(--card);
+            color: var(--primary);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 卡片容器 */
+        .card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 20px 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            margin-bottom: 16px;
+        }
         .form-group { margin-bottom: 18px; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
-        .req { color: var(--danger); margin-left: 4px; }
-        input[type="text"], input[type="number"], textarea {
-            width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem;
+        label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            color: #1e293b;
         }
-        .radio-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .sub-hint {
+            display: block;
+            font-weight: 400;
+            color: var(--muted);
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+        .req { color: var(--danger); margin-left: 3px; }
+
+        /* 強制 16px 避免 iOS Safari 點擊時自動放大畫面 */
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            background: #f8fafc;
+            color: var(--text);
+            transition: all 0.2s;
+            appearance: none;
+        }
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            background: #ffffff;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        /* 參加與否大按鈕 */
+        .radio-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
         .radio-card {
-            border: 2px solid var(--border); border-radius: 12px; padding: 14px;
-            text-align: center; cursor: pointer; font-weight: 600; transition: 0.2s;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            background: #f8fafc;
+            transition: all 0.15s;
+            user-select: none;
         }
         .radio-card input { display: none; }
-        .radio-card.selected-yes { border-color: var(--success); background: #ecfdf5; color: var(--success); }
-        .radio-card.selected-no { border-color: var(--danger); background: #fef2f2; color: var(--danger); }
-        .guest-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 18px; }
-        .guest-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-submit {
-            width: 100%; padding: 14px; background: var(--primary-light); color: white;
-            border: none; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer;
+        .radio-card.selected-yes {
+            border-color: var(--success);
+            background-color: #ecfdf5;
+            color: var(--success);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.12);
         }
-        .btn-submit:disabled { background: #9ca3af; }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
-        @media (min-width: 540px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
-        .stat-card { background: #f8fafc; border: 1px solid var(--border); padding: 14px; border-radius: 12px; text-align: center; }
-        .stat-card.highlight { background: #eff6ff; border-color: #bfdbfe; }
-        .stat-label { font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; }
-        .stat-val { font-size: 1.55rem; font-weight: 800; color: var(--primary); }
-        .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
-        th { background: #f9fafb; color: var(--muted); }
-        .tag-yes { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; }
-        .tag-no { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; }
-        .admin-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
-        .btn-outline { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 600; font-size: 0.88rem; }
-        .btn-del { color: var(--danger); border: none; background: none; cursor: pointer; font-weight: 600; }
+        .radio-card.selected-no {
+            border-color: var(--danger);
+            background-color: #fef2f2;
+            color: var(--danger);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
+        }
+
+        /* 手機友善的加減按鈕計數器 (Stepper) */
+        .guest-box {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px 14px;
+            margin-bottom: 18px;
+        }
+        .stepper-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .stepper-row:last-of-type {
+            border-bottom: none;
+        }
+        .stepper-info {
+            flex: 1;
+            padding-right: 10px;
+        }
+        .stepper-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #1e293b;
+        }
+        .stepper-desc {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+        .stepper-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 4px 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .step-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            border: none;
+            background: #eff6ff;
+            color: var(--primary-light);
+            font-size: 1.35rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .step-btn:active {
+            background: #dbeafe;
+            transform: scale(0.95);
+        }
+        .step-val {
+            min-width: 28px;
+            text-align: center;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .total-pill {
+            margin-top: 12px;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+        }
+        .btn-submit:active { transform: scale(0.99); }
+        .btn-submit:disabled { background: #94a3b8; box-shadow: none; }
+
+        /* 後台統計看板 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 12px 10px;
+            border-radius: 14px;
+            text-align: center;
+        }
+        .stat-card.highlight {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+        .stat-label { font-size: 0.78rem; color: var(--muted); margin-bottom: 2px; font-weight: 600; }
+        .stat-val { font-size: 1.45rem; font-weight: 800; color: var(--primary); }
+
+        .admin-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .btn-outline {
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        .btn-outline.full-col {
+            grid-column: span 2;
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: var(--primary);
+        }
+        .btn-outline:active { background: #e2e8f0; }
+
+        /* 手機版名單：卡片式排版 (免左右滑表格) */
+        .record-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .record-item {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .record-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .record-name-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .record-name {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .tag-yes { background: #d1fae5; color: #065f46; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.76rem; }
+        .tag-no { background: #fee2e2; color: #991b1b; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.76rem; }
+        .seat-badge {
+            background: #eff6ff;
+            color: var(--primary-light);
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+        .record-mid {
+            font-size: 0.88rem;
+            color: #475569;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .record-note {
+            background: #fffbeb;
+            color: #92400e;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.84rem;
+        }
+        .record-foot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 8px;
+            font-size: 0.78rem;
+            color: #94a3b8;
+        }
+        .btn-del {
+            color: var(--danger);
+            border: 1px solid #fecaca;
+            background: #fef2f2;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.76rem;
+        }
+
         .hidden { display: none; }
         .toast {
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            background: #111827; color: white; padding: 12px 24px; border-radius: 999px; font-weight: 600; z-index: 999;
-        }
-
-        /* ---------- 手機優化 (≤560px) ---------- */
-        @media (max-width: 560px) {
-            body { padding: 12px 10px; }
-            .hero { padding: 20px 16px; border-radius: 14px; }
-            .hero h1 { font-size: 1.3rem; }
-            .badge-row { flex-wrap: wrap; gap: 6px; }
-            .info-grid { font-size: 0.85rem; padding: 12px; }
-            .card { padding: 18px 14px; border-radius: 14px; }
-            .tab-btn { padding: 14px 8px; font-size: 0.88rem; min-height: 48px; }
-            .radio-card { padding: 16px 10px; }
-            .guest-row { grid-template-columns: 1fr; }
-            .btn-submit { padding: 16px; min-height: 52px; }
-            .admin-actions .btn-outline { flex: 1 1 100%; padding: 12px; text-align: center; }
-            .stat-val { font-size: 1.3rem; }
-            .toast { max-width: calc(100vw - 32px); text-align: center; }
-
-            /* 統計表 → 卡片式，免左右滑 */
-            .table-wrap { overflow-x: visible; }
-            table thead { display: none; }
-            table, table tbody, table tr, table td { display: block; width: 100%; }
-            table tr { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; padding: 8px 4px; background: #fff; }
-            table td { border-bottom: none; padding: 5px 12px; font-size: 0.92rem; }
-            table td[data-label] { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-            table td[data-label]::before {
-                content: attr(data-label); color: var(--muted); font-size: 0.8rem; font-weight: 600; flex-shrink: 0;
-            }
-            table td.cell-name { font-size: 1.05rem; }
-            table td.cell-del { border-top: 1px dashed var(--border); margin-top: 4px; padding-top: 8px; text-align: right; }
-            .btn-del { padding: 10px 14px; font-size: 0.9rem; }
+            position: fixed;
+            bottom: calc(24px + env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            z-index: 999;
+            width: max-content;
+            max-width: 90vw;
+            text-align: center;
         }
     </style>
 </head>
@@ -122,28 +452,31 @@
         </div>
         <h1>12/22 高雄島語自助餐廳 報名統計</h1>
         <div class="info-grid">
-            <div class="info-item"><span>日期：</span>2026/12/22 (週二)</div>
-            <div class="info-item"><span>餐期：</span>平日午餐 (11:30 - 14:30 / 無下午茶清場)</div>
-            <div class="info-item"><span>地點：</span>高雄漢神百貨 8F (島語)</div>
-            <div class="info-item"><span>參考餐費：</span>$1,490 + 10% ($1,639/人)</div>
+            <div class="info-item"><span>📅 日期：</span>2026/12/22 (週二)</div>
+            <div class="info-item"><span>⏰ 餐期：</span>11:30 - 14:30 (無下午茶清場)</div>
+            <div class="info-item"><span>📍 地點：</span>高雄漢神百貨本館 8F</div>
+            <div class="info-item"><span>💰 餐費：</span>$1,490+10% ($1,639/人)</div>
         </div>
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" id="tabFormBtn" onclick="switchTab('form')">我要登記 / 修改</button>
-        <button class="tab-btn" id="tabAdminBtn" onclick="switchTab('admin')">目前報名統計 (<span id="navCount">0</span>)</button>
+        <button class="tab-btn active" id="tabFormBtn" onclick="switchTab('form')">✍️ 我要登記 / 修改</button>
+        <button class="tab-btn" id="tabAdminBtn" onclick="switchTab('admin')">📊 報名統計 (<span id="navCount">0</span>)</button>
     </div>
 
     <!-- 報名表單 -->
     <div id="formSection" class="card">
         <form id="regForm" onsubmit="handleSubmit(event)">
             <div class="form-group">
-                <label>員工姓名 / 暱稱<span class="req">*</span> <small style="font-weight:normal;color:#6b7280;">(輸入相同姓名送出，可直接覆蓋更新紀錄)</small></label>
+                <label>
+                    員工姓名 / 暱稱<span class="req">*</span>
+                    <span class="sub-hint">輸入相同姓名再次送出，會自動覆蓋更新您的紀錄</span>
+                </label>
                 <input type="text" id="empName" placeholder="請輸入您的姓名" required>
             </div>
 
             <div class="form-group">
-                <label>是否參加本次 12/22 QA Q4 聚餐？<span class="req">*</span></label>
+                <label>是否參加本次 12/22 聚餐？<span class="req">*</span></label>
                 <div class="radio-group">
                     <label class="radio-card selected-yes" id="cardYes" onclick="setAttend('yes')">
                         <input type="radio" name="attend" value="參加" checked> ⭕ 參加
@@ -155,20 +488,37 @@
             </div>
 
             <div id="guestSection" class="guest-box">
-                <label style="margin-bottom: 10px; color: #1e3a8a;">攜伴人數登記 (不含同仁本人)</label>
-                <div class="guest-row">
-                    <div>
-                        <label style="font-size: 0.85rem; color: #4b5563;">攜伴大人 (位)</label>
-                        <input type="number" id="guestAdult" min="0" max="10" value="0" onchange="updateTotalPreview()">
+                <div style="font-weight: 800; color: #1e3a8a; font-size: 0.92rem; margin-bottom: 6px;">
+                    👨‍👩‍👧 攜伴人數設定 (不含同仁本人)
+                </div>
+
+                <div class="stepper-row">
+                    <div class="stepper-info">
+                        <div class="stepper-title">攜伴大人</div>
+                        <div class="stepper-desc">滿 12 歲以上親友</div>
                     </div>
-                    <div>
-                        <label style="font-size: 0.85rem; color: #4b5563;">攜伴兒童 / 需兒童椅 (位)</label>
-                        <input type="number" id="guestChild" min="0" max="10" value="0" onchange="updateTotalPreview()">
+                    <div class="stepper-controls">
+                        <button type="button" class="step-btn" onclick="changeGuest('adult', -1)">−</button>
+                        <div class="step-val" id="valAdult">0</div>
+                        <button type="button" class="step-btn" onclick="changeGuest('adult', 1)">＋</button>
                     </div>
                 </div>
-                <p id="totalPreview" style="margin-top: 12px; font-size: 0.9rem; font-weight: 600; color: #059669;">
-                    👉 您這組共計出席：1 位 (本人 1 位 + 攜伴大人 0 位 + 兒童 0 位)
-                </p>
+
+                <div class="stepper-row">
+                    <div class="stepper-info">
+                        <div class="stepper-title">攜伴兒童</div>
+                        <div class="stepper-desc">孩童或需安排兒童座椅</div>
+                    </div>
+                    <div class="stepper-controls">
+                        <button type="button" class="step-btn" onclick="changeGuest('child', -1)">−</button>
+                        <div class="step-val" id="valChild">0</div>
+                        <button type="button" class="step-btn" onclick="changeGuest('child', 1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="total-pill" id="totalPreview">
+                    👉 您這組共計出席：1 位 (本人 1 位)
+                </div>
             </div>
 
             <div class="form-group">
@@ -184,7 +534,7 @@
     <div id="adminSection" class="card hidden">
         <div class="stats-grid">
             <div class="stat-card highlight">
-                <div class="stat-label">預訂總人數 (含攜伴)</div>
+                <div class="stat-label">預訂總座位 (含攜伴)</div>
                 <div class="stat-val" id="statTotalSeat">0</div>
             </div>
             <div class="stat-card">
@@ -202,28 +552,13 @@
         </div>
 
         <div class="admin-actions">
+            <button class="btn-outline full-col" onclick="copySummary()">📋 一鍵複製統計報表 (貼 LINE / Teams)</button>
             <button class="btn-outline" onclick="fetchRecords()">🔄 重新整理</button>
-            <button class="btn-outline" onclick="exportCSV()">📥 匯出 Excel (CSV)</button>
-            <button class="btn-outline" onclick="copySummary()">📋 複製統計文字報表 (貼LINE群組)</button>
+            <button class="btn-outline" onclick="exportCSV()">📥 匯出 CSV</button>
         </div>
 
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>姓名</th>
-                        <th>狀態</th>
-                        <th>攜伴(大/小)</th>
-                        <th>合計座位</th>
-                        <th>備註</th>
-                        <th>更新時間</th>
-                        <th>管理</th>
-                    </tr>
-                </thead>
-                <tbody id="recordTableBody">
-                    <tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:20px;">載入中...</td></tr>
-                </tbody>
-            </table>
+        <div id="recordListContainer" class="record-list">
+            <div style="text-align:center;color:#94a3b8;padding:24px;">資料載入中...</div>
         </div>
     </div>
 </div>
@@ -231,14 +566,38 @@
 <div id="toast" class="toast hidden">已儲存！</div>
 
 <script>
+    // =========================================================================
+    // ★ 請填入您的 Supabase Project URL 與 anon public key ★
+    // =========================================================================
     const SUPABASE_URL = "https://nutkocotbncqxgvjkfxi.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51dGtvY290Ym5jcXhndmprZnhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4NTcwMjcsImV4cCI6MjEwMTQzMzAyN30.yfvXV2dvYhS8cTLgyir-ddaVb5oqbYIDyjngINVccfE";
-    const ADMIN_PIN = "1222"; // 刪除紀錄時的管理員驗證碼 (預設為活動日期 1222，可自行修改)
+    const ADMIN_PIN = "1222"; // 刪除紀錄時的管理員驗證碼
     const TABLE_NAME = "qa_q4_island_rsvp";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let cachedRecords = [];
     let currentAttend = '參加';
+    let guestAdultCount = 0;
+    let guestChildCount = 0;
+
+    function changeGuest(type, delta) {
+        if (type === 'adult') {
+            guestAdultCount = Math.max(0, Math.min(10, guestAdultCount + delta));
+            document.getElementById('valAdult').innerText = guestAdultCount;
+        } else {
+            guestChildCount = Math.max(0, Math.min(10, guestChildCount + delta));
+            document.getElementById('valChild').innerText = guestChildCount;
+        }
+        updateTotalPreview();
+    }
+
+    function updateTotalPreview() {
+        const total = 1 + guestAdultCount + guestChildCount;
+        const guestText = (guestAdultCount + guestChildCount) > 0
+            ? `本人 1 位 + 大人 ${guestAdultCount} 位 + 兒童 ${guestChildCount} 位`
+            : `本人 1 位`;
+        document.getElementById('totalPreview').innerText = `👉 您這組共計出席：${total} 位 (${guestText})`;
+    }
 
     async function fetchRecords() {
         const { data, error } = await supabaseClient
@@ -252,7 +611,7 @@
         }
         document.getElementById('connStatus').innerText = '🟢 雲端即時同步中';
         cachedRecords = data || [];
-        renderTable(cachedRecords);
+        renderList(cachedRecords);
     }
 
     async function handleSubmit(e) {
@@ -263,8 +622,8 @@
 
         const emp_name = document.getElementById('empName').value.trim();
         const attend_status = currentAttend;
-        const guest_adult = attend_status === '參加' ? parseInt(document.getElementById('guestAdult').value || 0, 10) : 0;
-        const guest_child = attend_status === '參加' ? parseInt(document.getElementById('guestChild').value || 0, 10) : 0;
+        const guest_adult = attend_status === '參加' ? guestAdultCount : 0;
+        const guest_child = attend_status === '參加' ? guestChildCount : 0;
         const total_seats = attend_status === '參加' ? (1 + guest_adult + guest_child) : 0;
         const note = document.getElementById('note').value.trim();
 
@@ -284,6 +643,10 @@
         }
         showToast(`✅ 「${emp_name}」報名資料已送出！`);
         document.getElementById('regForm').reset();
+        guestAdultCount = 0;
+        guestChildCount = 0;
+        document.getElementById('valAdult').innerText = '0';
+        document.getElementById('valChild').innerText = '0';
         setAttend('yes');
         fetchRecords();
     }
@@ -292,7 +655,7 @@
         const pin = prompt(`請輸入管理員密碼以刪除「${name}」的紀錄：`);
         if (pin === null) return;
         if (pin !== ADMIN_PIN) {
-            showToast('❌ 管理員密碼錯誤，無法刪除！');
+            showToast('❌ 管理員密碼錯誤！');
             return;
         }
         const { error } = await supabaseClient.from(TABLE_NAME).delete().eq('id', id);
@@ -302,18 +665,19 @@
         }
     }
 
-    function renderTable(records) {
+    function renderList(records) {
         document.getElementById('navCount').innerText = records.length;
         let totalSeat = 0, staffYes = 0, staffNo = 0, guestAdult = 0, guestChild = 0;
-        const tbody = document.getElementById('recordTableBody');
-        tbody.innerHTML = '';
+        const container = document.getElementById('recordListContainer');
+        container.innerHTML = '';
 
         if (!records.length) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:20px;">目前尚無報名資料</td></tr>';
+            container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:28px;">目前尚無報名資料</div>';
         }
 
         records.forEach(r => {
-            if (r.attend_status === '參加') {
+            const isYes = r.attend_status === '參加';
+            if (isYes) {
                 staffYes++;
                 guestAdult += (r.guest_adult || 0);
                 guestChild += (r.guest_child || 0);
@@ -321,19 +685,28 @@
             } else {
                 staffNo++;
             }
+
             const d = r.updated_at ? new Date(r.updated_at) : new Date();
             const timeStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="cell-name" data-label="姓名"><strong>${escapeHtml(r.emp_name)}</strong></td>
-                <td data-label="狀態"><span class="${r.attend_status === '參加' ? 'tag-yes' : 'tag-no'}">${r.attend_status}</span></td>
-                <td data-label="攜伴">${r.attend_status === '參加' ? `${r.guest_adult} 大 / ${r.guest_child} 小` : '-'}</td>
-                <td data-label="合計"><strong>${r.total_seats}</strong> 位</td>
-                <td data-label="備註">${escapeHtml(r.note || '-')}</td>
-                <td data-label="更新" style="color:#6b7280;font-size:0.8rem;">${timeStr}</td>
-                <td class="cell-del"><button class="btn-del" onclick="deleteRecord(${r.id}, '${escapeHtml(r.emp_name)}')">刪除</button></td>
+
+            const card = document.createElement('div');
+            card.className = 'record-item';
+            card.innerHTML = `
+                <div class="record-top">
+                    <div class="record-name-wrap">
+                        <span class="record-name">${escapeHtml(r.emp_name)}</span>
+                        <span class="${isYes ? 'tag-yes' : 'tag-no'}">${r.attend_status}</span>
+                    </div>
+                    ${isYes ? `<span class="seat-badge">共 ${r.total_seats} 位</span>` : ''}
+                </div>
+                ${isYes ? `<div class="record-mid"><span>👤 本人 1 位</span><span>👨‍👩‍👧 攜伴：${r.guest_adult} 大 / ${r.guest_child} 小</span></div>` : ''}
+                ${r.note ? `<div class="record-note">💬 備註：${escapeHtml(r.note)}</div>` : ''}
+                <div class="record-foot">
+                    <span>更新於 ${timeStr}</span>
+                    <button class="btn-del" onclick="deleteRecord(${r.id}, '${escapeHtml(r.emp_name)}')">刪除</button>
+                </div>
             `;
-            tbody.appendChild(tr);
+            container.appendChild(card);
         });
 
         document.getElementById('statTotalSeat').innerText = totalSeat;
@@ -356,46 +729,41 @@
         document.getElementById('cardNo').className = 'radio-card ' + (type === 'no' ? 'selected-no' : '');
         document.getElementById('guestSection').classList.toggle('hidden', type === 'no');
         if (type === 'no') {
-            document.getElementById('guestAdult').value = 0;
-            document.getElementById('guestChild').value = 0;
+            guestAdultCount = 0;
+            guestChildCount = 0;
+            document.getElementById('valAdult').innerText = '0';
+            document.getElementById('valChild').innerText = '0';
         }
         updateTotalPreview();
     }
 
-    function updateTotalPreview() {
-        const adult = parseInt(document.getElementById('guestAdult').value || 0, 10);
-        const child = parseInt(document.getElementById('guestChild').value || 0, 10);
-        document.getElementById('totalPreview').innerText =
-            `👉 您這組共計出席：${1 + adult + child} 位 (本人 1 位 + 攜伴大人 ${adult} 位 + 兒童 ${child} 位)`;
-    }
-
     function exportCSV() {
         if (!cachedRecords.length) { showToast('目前無資料可匯出'); return; }
-        let csv = '\uFEFF姓名,是否參加,攜伴大人,攜伴兒童,該組總人數,備註,更新時間\n';
+        let csv = '\uFEFF\u59D3\u540D,\u662F\u5426\u53C3\u52A0,\u651C\u4F34\u5927\u4EBA,\u651C\u4F34\u5152\u7AE5,\u8A72\u7D44\u7E3D\u4EBA\u6578,\u5099\u8A3B,\u66F4\u65B0\u6642\u9593\n';
         cachedRecords.forEach(r => {
             csv += `"${r.emp_name}","${r.attend_status}",${r.guest_adult},${r.guest_child},${r.total_seats},"${(r.note||'').replace(/"/g,'""')}","${r.updated_at}"\n`;
         });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-        link.download = '1222_QA_Q4_高雄島語報名統計.csv';
+        link.download = '1222_QA_Q4_\u9AD8\u96C4\u5CF6\u8A9E\u5831\u540D\u7D71\u8A08.csv';
         link.click();
     }
 
     function copySummary() {
-        const yesList = cachedRecords.filter(r => r.attend_status === '參加');
-        const noList = cachedRecords.filter(r => r.attend_status !== '參加');
+        const yesList = cachedRecords.filter(r => r.attend_status === '\u53C3\u52A0');
+        const noList = cachedRecords.filter(r => r.attend_status !== '\u53C3\u52A0');
         const totalSeat = yesList.reduce((acc, r) => acc + (r.total_seats || 0), 0);
         const totalGuest = yesList.reduce((acc, r) => acc + (r.guest_adult || 0) + (r.guest_child || 0), 0);
 
-        let text = `【12/22 (二) QA Q4 高雄島語聚餐 報名統計】\n`;
-        text += `📊 預訂總人數：${totalSeat} 位 (同仁 ${yesList.length} 位 + 攜伴 ${totalGuest} 位)\n`;
-        text += `------------------------\n⭕ 參加名單 (${yesList.length}組)：\n`;
+        let text = `\u301012/22 (\u4E8C) QA Q4 \u9AD8\u96C4\u5CF6\u8A9E\u805A\u9910 \u5831\u540D\u7D71\u8A08\u3011\n`;
+        text += `\uD83D\uDCCA \u9810\u8A02\u7E3D\u4EBA\u6578\uFF1A${totalSeat} \u4F4D (\u540C\u4EC1 ${yesList.length} \u4F4D + \u651C\u4F34 ${totalGuest} \u4F4D)\n`;
+        text += `------------------------\n\u2B55 \u53C3\u52A0\u540D\u55AE (${yesList.length}\u7D44)\uFF1A\n`;
         yesList.forEach(r => {
             const g = (r.guest_adult || 0) + (r.guest_child || 0);
-            text += `• ${r.emp_name}${g > 0 ? ` (攜伴: ${r.guest_adult}大${r.guest_child}小，共${r.total_seats}位)` : ' (1位)'}${r.note ? ` [備註: ${r.note}]` : ''}\n`;
+            text += `\u2022 ${r.emp_name}${g > 0 ? ` (\u651C\u4F34: ${r.guest_adult}\u5927${r.guest_child}\u5C0F\uFF0C\u5171${r.total_seats}\u4F4D)` : ' (1\u4F4D)'}${r.note ? ` [\u5099\u8A3B: ${r.note}]` : ''}\n`;
         });
-        if (noList.length) text += `\n❌ 不克參加 (${noList.length}位)：${noList.map(r => r.emp_name).join('、')}\n`;
-        navigator.clipboard.writeText(text).then(() => showToast('已複製統計文字，可直接貼上群組！'));
+        if (noList.length) text += `\n\u274C \u4E0D\u514B\u53C3\u52A0 (${noList.length}\u4F4D)\uFF1A${noList.map(r => r.emp_name).join('\u3001')}\n`;
+        navigator.clipboard.writeText(text).then(() => showToast('\u5DF2\u8907\u88FD\u7D71\u8A08\u6587\u5B57\uFF0C\u53EF\u76F4\u63A5\u8CBC\u4E0A\u7FA4\u7D44\uFF01'));
     }
 
     function escapeHtml(str) {
