@@ -79,6 +79,37 @@
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
             background: #111827; color: white; padding: 12px 24px; border-radius: 999px; font-weight: 600; z-index: 999;
         }
+
+        /* ---------- 手機優化 (≤560px) ---------- */
+        @media (max-width: 560px) {
+            body { padding: 12px 10px; }
+            .hero { padding: 20px 16px; border-radius: 14px; }
+            .hero h1 { font-size: 1.3rem; }
+            .badge-row { flex-wrap: wrap; gap: 6px; }
+            .info-grid { font-size: 0.85rem; padding: 12px; }
+            .card { padding: 18px 14px; border-radius: 14px; }
+            .tab-btn { padding: 14px 8px; font-size: 0.88rem; min-height: 48px; }
+            .radio-card { padding: 16px 10px; }
+            .guest-row { grid-template-columns: 1fr; }
+            .btn-submit { padding: 16px; min-height: 52px; }
+            .admin-actions .btn-outline { flex: 1 1 100%; padding: 12px; text-align: center; }
+            .stat-val { font-size: 1.3rem; }
+            .toast { max-width: calc(100vw - 32px); text-align: center; }
+
+            /* 統計表 → 卡片式，免左右滑 */
+            .table-wrap { overflow-x: visible; }
+            table thead { display: none; }
+            table, table tbody, table tr, table td { display: block; width: 100%; }
+            table tr { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; padding: 8px 4px; background: #fff; }
+            table td { border-bottom: none; padding: 5px 12px; font-size: 0.92rem; }
+            table td[data-label] { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+            table td[data-label]::before {
+                content: attr(data-label); color: var(--muted); font-size: 0.8rem; font-weight: 600; flex-shrink: 0;
+            }
+            table td.cell-name { font-size: 1.05rem; }
+            table td.cell-del { border-top: 1px dashed var(--border); margin-top: 4px; padding-top: 8px; text-align: right; }
+            .btn-del { padding: 10px 14px; font-size: 0.9rem; }
+        }
     </style>
 </head>
 <body>
@@ -294,13 +325,13 @@
             const timeStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>${escapeHtml(r.emp_name)}</strong></td>
-                <td><span class="${r.attend_status === '參加' ? 'tag-yes' : 'tag-no'}">${r.attend_status}</span></td>
-                <td>${r.attend_status === '參加' ? `${r.guest_adult} 大 / ${r.guest_child} 小` : '-'}</td>
-                <td><strong>${r.total_seats}</strong> 位</td>
-                <td>${escapeHtml(r.note || '-')}</td>
-                <td style="color:#6b7280;font-size:0.8rem;">${timeStr}</td>
-                <td><button class="btn-del" onclick="deleteRecord(${r.id}, '${escapeHtml(r.emp_name)}')">刪除</button></td>
+                <td class="cell-name" data-label="姓名"><strong>${escapeHtml(r.emp_name)}</strong></td>
+                <td data-label="狀態"><span class="${r.attend_status === '參加' ? 'tag-yes' : 'tag-no'}">${r.attend_status}</span></td>
+                <td data-label="攜伴">${r.attend_status === '參加' ? `${r.guest_adult} 大 / ${r.guest_child} 小` : '-'}</td>
+                <td data-label="合計"><strong>${r.total_seats}</strong> 位</td>
+                <td data-label="備註">${escapeHtml(r.note || '-')}</td>
+                <td data-label="更新" style="color:#6b7280;font-size:0.8rem;">${timeStr}</td>
+                <td class="cell-del"><button class="btn-del" onclick="deleteRecord(${r.id}, '${escapeHtml(r.emp_name)}')">刪除</button></td>
             `;
             tbody.appendChild(tr);
         });
